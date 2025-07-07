@@ -10,7 +10,7 @@ class Sistema:
 class CheckIn:
     def __init__(self):
         pass
-    
+     
     hospedes = {}
     quartos_disponiveis = list(range(1, 11))
 
