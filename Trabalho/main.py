@@ -26,34 +26,24 @@ def menu_gerente():
     print("[0] - Logout")
     
     
-def povoar_sistema():
-    sistema = sv.Sistema()
-    checkin = sv.CheckIn()
-    checkout = sv.CheckOut()
-
-
-    # O Gerente é o núcleo do sistema do gerente. Ele não deve ser removido sob nenhuma circunstância.
-    gerente = md.Gerente("Gerente Geral", "00000000000", "123")
+def instacia_funcionarios(gerente):
         
-    gerente.adicionar_funcionario("Funcionário Padrão", "11111111111", "123")
-    gerente.adicionar_funcionario("Luis", "22222222222", "123")
-    gerente.adicionar_funcionario("Maria", "33333333333", "123")
-    gerente.adicionar_funcionario("Ana", "44444444444", "123")
-    gerente.adicionar_funcionario("João", "55555555555", "123")
+    gerente.adicionar_funcionario("FUNCIONARIO P", "11111111111", "123")
+    gerente.adicionar_funcionario("LUIS", "22222222222", "123")
+    gerente.adicionar_funcionario("MARIA", "33333333333", "123")
+    gerente.adicionar_funcionario("ANA", "44444444444", "123")
+    gerente.adicionar_funcionario("SEU ZÉ", "55555555555", "123")
 
-    return sistema, checkin, checkout, gerente
+    # return checkin, checkout, gerente
 
 
 def menu_principal():
-    # sistema = sv.Sistema()
-    # checkin = sv.CheckIn()
-    # checkout = sv.CheckOut()
-
-    # # O Gerente é o núcleo do sistema do gerente. Ele não deve ser removido sob nenhuma circunstância.
-    # gerente = md.Gerente("Gerente Geral", "00000000000", "123")    
-    # gerente.adicionar_funcionario("Funcionário Padrão", "11111111111", "123")
+    sistema = sv.Sistema()
+    checkin = sv.CheckIn()
+    checkout = sv.CheckOut()
     
-    sistema, checkin, checkout, gerente = povoar_sistema()
+    gerente = md.Gerente("GERENTE GERAL", "00000000000", "321") #nunca, sob nenhuma circunstância apague este cara
+    instacia_funcionarios(gerente)
 
     while True:
         menu_inicial()
@@ -120,11 +110,14 @@ def menu_principal():
                                 if quarto not in range(1, 11):
                                     print("\nNúmero do quarto inválido. Deve estar entre 1 e 10.")
                                     continue
+                                
                             except ValueError:
                                 print("\nEntrada inválida. O número do quarto deve ser um número inteiro.")
                                 continue
+                            
                             hospede = md.Hospede(nome, cpf, quarto)
                             funcionario.registrar_hospede(checkin, hospede)
+                            
                         except ValueError:
                             print("\nEntrada inválida. O número do quarto deve ser um número inteiro.")
                             
@@ -139,6 +132,7 @@ def menu_principal():
                         checkout.remover_hospede(cpf, checkin, funcionario, nome)
                         
                     elif opcao_funcionario == "5":
+                        
                         print(f"\nHistórico de ações do funcionário {funcionario.nome}")
                         if not funcionario.historico:
                             print("\nNenhuma ação realizada.")
