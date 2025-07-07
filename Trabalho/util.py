@@ -14,9 +14,9 @@ def captura_cpf():
 
 def imprimir_cpf(cpf):
     if cpf.isdigit() and len(cpf) == 11:
-        print(f"\nCPF: {cpf[:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:]}")
+        return f"CPF: {cpf[:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:]}"
     else:
-        print("\nCPF inválido.")
+        return "CPF inválido."
         
 def capturar_senha():
     

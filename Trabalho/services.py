@@ -37,7 +37,7 @@ class CheckIn:
         else:
             print("\nLista de Hóspedes:")
             for hospede in CheckIn.hospedes.values():
-                print(f"Nome: {hospede.nome}\nCPF: {hospede.cpf}\nQuarto: {hospede.quarto}\n")
+                print(f"Nome: {hospede.nome}\n{util.imprimir_cpf(hospede.cpf)}\nQuarto: {hospede.quarto}\n")
 
     def listar_quartos_disponiveis(self):
         quartos_disponiveis = util.ordenar_quartos(CheckIn.quartos_disponiveis)

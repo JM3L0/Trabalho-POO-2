@@ -24,15 +24,36 @@ def menu_gerente():
     print("[3] - Listar Funcionários")
     print("[4] - Imprimir Histórico")
     print("[0] - Logout")
-
-def menu_principal():
+    
+    
+def povoar_sistema():
     sistema = sv.Sistema()
     checkin = sv.CheckIn()
     checkout = sv.CheckOut()
 
+
     # O Gerente é o núcleo do sistema do gerente. Ele não deve ser removido sob nenhuma circunstância.
-    gerente = md.Gerente("Gerente Geral", "00000000000", "123")    
+    gerente = md.Gerente("Gerente Geral", "00000000000", "123")
+        
     gerente.adicionar_funcionario("Funcionário Padrão", "11111111111", "123")
+    gerente.adicionar_funcionario("Luis", "22222222222", "123")
+    gerente.adicionar_funcionario("Maria", "33333333333", "123")
+    gerente.adicionar_funcionario("Ana", "44444444444", "123")
+    gerente.adicionar_funcionario("João", "55555555555", "123")
+
+    return sistema, checkin, checkout, gerente
+
+
+def menu_principal():
+    # sistema = sv.Sistema()
+    # checkin = sv.CheckIn()
+    # checkout = sv.CheckOut()
+
+    # # O Gerente é o núcleo do sistema do gerente. Ele não deve ser removido sob nenhuma circunstância.
+    # gerente = md.Gerente("Gerente Geral", "00000000000", "123")    
+    # gerente.adicionar_funcionario("Funcionário Padrão", "11111111111", "123")
+    
+    sistema, checkin, checkout, gerente = povoar_sistema()
 
     while True:
         menu_inicial()
@@ -51,7 +72,7 @@ def menu_principal():
 
                     if opcao_gerente == "1":
                         
-                        nome = input("\nNome do funcionário: ")
+                        nome = input("\nNome do funcionário: ").upper()
                         cpf = util.captura_cpf()
                         senha = util.capturar_senha()
                         
@@ -90,7 +111,7 @@ def menu_principal():
 
                     if opcao_funcionario == "1":
                         try:
-                            nome = input("\nNome do hóspede: ")
+                            nome = input("\nNome do hóspede: ").upper()
                             cpf = util.captura_cpf()
                             
                             try:

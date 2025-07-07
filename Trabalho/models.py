@@ -1,4 +1,5 @@
 import abc
+import util
 
 class Autentica(abc.ABC):
     @abc.abstractmethod
@@ -13,6 +14,7 @@ class Pessoa:
     @property
     def nome(self):
         return self._nome
+    
     @nome.setter
     def nome(self, nome):
         self._nome = nome
@@ -30,6 +32,7 @@ class Funcionario(Pessoa, Autentica):
     @property
     def senha(self):
         return self._senha
+    
     @senha.setter
     def senha(self, senha):
         self._senha = senha
@@ -37,16 +40,14 @@ class Funcionario(Pessoa, Autentica):
     @property
     def historico(self):
         return self._historico
+    
     @historico.setter
     def historico(self, historico):
         self._historico = historico
 
     def autentica(self, senha):
-        if self.senha == senha:
-            return True
-        else:
-            return False
-        
+        return (senha == self.senha)
+          
 class Funcionario_padrao(Funcionario):
     def registrar_hospede(self, checkin, hospede):
         if checkin.registrar_hospede(hospede) == True:
@@ -78,24 +79,25 @@ class Gerente(Funcionario):
         if not cpf.isdigit() or len(cpf) != 11:
             print("\nCPF inválido. Deve ser um número de 11 caracteres.")
             return False
+        
         if cpf in self.funcionarios:
             print("\nCPF já cadastrado para outro funcionário.")
             return False
+        
         novo_funcionario = Funcionario_padrao(nome, cpf, senha)
         self.funcionarios[cpf] = novo_funcionario
-        self.historico.append(f"Funcionário com cpf ({cpf}) adicionado.")
+        self.historico.append(f"Funcionário com cpf ({util.imprimir_cpf(cpf)}) adicionado.")
         print(f"\nFuncionário {nome} adicionado com sucesso.")
         return True
 
     def remover_funcionario(self, cpf):
-        if not cpf.isdigit() or len(cpf) != 11:
-            print("\nCPF inválido. Deve ser um número de 11 caracteres.")
-            return False
+        
         if cpf in self.funcionarios:
             del self.funcionarios[cpf]
-            self.historico.append(f"Funcionário com CPF ({cpf}) removido.")
+            self.historico.append(f"Funcionário com CPF ({util.imprimir_cpf(cpf)}) removido.")
             print("\nFuncionário removido com sucesso.")
             return True
+        
         else:
             print("\nNenhum funcionário com esse CPF foi encontrado.")
             return False
@@ -105,15 +107,16 @@ class Gerente(Funcionario):
             print("\nNenhum funcionário cadastrado.")
             return False
         else:
-            print("\nLista de Funcionários:")
+            print("\nLista de Funcionários:\n")
             for cpf, funcionario in self.funcionarios.items():
-                print(f"Nome: {funcionario.nome}\nCPF: {funcionario.cpf}\n")
+                print(f"Nome: {funcionario.nome}\n{util.imprimir_cpf(funcionario.cpf)}\n")
             return True
         
     def imprimir_historico_gerente(self):
         if not self.historico:
             print("\nNenhuma ação realizada.")
             return False
+        
         else:
             print("\nHistórico de ações do gerente:")
             for acao in self.historico:
@@ -133,4 +136,4 @@ class Hospede(Pessoa):
         self._quarto = quarto
 
     def _str_(self):
-        return f"Hóspede: {self.nome}\nCPF: {self.cpf}\nQuarto: {self.quarto}"
+        return f"Hóspede: {self.nome}\n{util.imprimir_cpf(self.cpf)}\nQuarto: {self.quarto}"
