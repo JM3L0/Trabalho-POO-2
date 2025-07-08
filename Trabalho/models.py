@@ -1,6 +1,10 @@
 import abc
 import util
 
+RED = '\033[31m'
+GREEN = '\033[32m'
+RESET = '\033[0m'
+
 class Autentica(abc.ABC):
     @abc.abstractmethod
     def autentica(self, senha):
@@ -77,17 +81,17 @@ class Gerente(Funcionario):
 
     def adicionar_funcionario(self, nome, cpf, senha):
         if not cpf.isdigit() or len(cpf) != 11:
-            print("\nCPF inválido. Deve ser um número de 11 caracteres.")
+            print(RED + "\nCPF inválido. Deve ser um número de 11 caracteres." + RESET)
             return False
         
         if cpf in self.funcionarios:
-            print("\nCPF já cadastrado para outro funcionário.")
+            print(RED + "\nCPF já cadastrado para outro funcionário." + RESET)
             return False
         
         novo_funcionario = Funcionario_padrao(nome, cpf, senha)
         self.funcionarios[cpf] = novo_funcionario
         self.historico.append(f"Funcionário com cpf ({util.imprimir_cpf(cpf)}) adicionado.")
-        print(f"\nFuncionário {nome} adicionado com sucesso.")
+        print(GREEN + f"\nFuncionário {nome} adicionado com sucesso." + RESET)
         return True
 
     def remover_funcionario(self, cpf):
@@ -95,16 +99,16 @@ class Gerente(Funcionario):
         if cpf in self.funcionarios:
             del self.funcionarios[cpf]
             self.historico.append(f"Funcionário com CPF ({util.imprimir_cpf(cpf)}) removido.")
-            print("\nFuncionário removido com sucesso.")
+            print(GREEN + "\nFuncionário removido com sucesso." + RESET)
             return True
         
         else:
-            print("\nNenhum funcionário com esse CPF foi encontrado.")
+            print(RED + "\nNenhum funcionário com esse CPF foi encontrado." + RESET)
             return False
 
     def listar_funcionarios(self):
         if not self.funcionarios:
-            print("\nNenhum funcionário cadastrado.")
+            print(RED + "\nNenhum funcionário cadastrado." + RESET)
             return False
         else:
             print("\nLista de Funcionários:\n")
@@ -114,7 +118,7 @@ class Gerente(Funcionario):
         
     def imprimir_historico_gerente(self):
         if not self.historico:
-            print("\nNenhuma ação realizada.")
+            print(RED + "\nNenhuma ação realizada." + RESET)
             return False
         
         else:

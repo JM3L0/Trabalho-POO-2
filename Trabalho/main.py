@@ -2,6 +2,10 @@ import models as md
 import services as sv
 import util
 
+RED = '\033[31m'
+GREEN = '\033[32m'
+RESET = '\033[0m'
+
 def menu_funcionario():
     print("\n=== Menu do Funcionário ===")
     print("[1] - Registrar Hóspede (Check-in)")
@@ -55,7 +59,7 @@ def menu_principal():
             senha = util.capturar_senha()
             
             if sistema.login(gerente, senha):
-                print("\nLogin realizado com sucesso como Gerente!")
+                print(GREEN + "\nLogin realizado com sucesso como Gerente!" + RESET)
                 while True:
                     menu_gerente()
                     opcao_gerente = input("Escolha uma opção: ")
@@ -79,13 +83,13 @@ def menu_principal():
                         gerente.imprimir_historico_gerente()
                         
                     elif opcao_gerente == "0":
-                        print("\nLogout do Gerente realizado.")
+                        print(GREEN + "\nLogout do Gerente realizado." + RESET)
                         break
                     else:
-                        print("\nOpção inválida! Tente novamente.")
+                        print(RED + "\nOpção inválida! Tente novamente." + RESET)
             else:
-                print("\nSenha incorreta!")
-                
+                print(RED + "\nSenha incorreta!" + RESET)
+
         elif opcao == "2":
             cpf = util.captura_cpf()
             senha = util.capturar_senha()
@@ -94,7 +98,7 @@ def menu_principal():
             funcionario = util.existe_funcionario(gerente.funcionarios, cpf)
             
             if funcionario and sistema.login(funcionario, senha):
-                print(f"\nLogin realizado com sucesso como {funcionario.nome}!")
+                print(GREEN + f"\nLogin realizado com sucesso como {funcionario.nome}!" + RESET)
                 while True:
                     menu_funcionario()
                     opcao_funcionario = input("Escolha uma opção: ")
@@ -108,19 +112,19 @@ def menu_principal():
                                 quarto = int(input("Número do quarto (1 a 10): "))
                                 
                                 if quarto not in range(1, 11):
-                                    print("\nNúmero do quarto inválido. Deve estar entre 1 e 10.")
+                                    print(RED + "\nNúmero do quarto inválido. Deve estar entre 1 e 10." + RESET)
                                     continue
                                 
                             except ValueError:
-                                print("\nEntrada inválida. O número do quarto deve ser um número inteiro.")
+                                print(RED + "\nEntrada inválida. O número do quarto deve ser um número inteiro." + RESET)
                                 continue
                             
                             hospede = md.Hospede(nome, cpf, quarto)
                             funcionario.registrar_hospede(checkin, hospede)
                             
                         except ValueError:
-                            print("\nEntrada inválida. O número do quarto deve ser um número inteiro.")
-                            
+                            print(RED + "\nEntrada inválida. O número do quarto deve ser um número inteiro." + RESET)
+
                     elif opcao_funcionario == "2":
                         funcionario.listar_hospedes(checkin)
                         
@@ -141,20 +145,20 @@ def menu_principal():
                                 print(acao)
                                 
                     elif opcao_funcionario == "0":
-                        print("\nLogout do Funcionário realizado.")
+                        print(GREEN + "\nLogout do Funcionário realizado." + RESET)
                         break
                     else:
-                        print("\nOpção inválida! Tente novamente.")
+                        print(RED + "\nOpção inválida! Tente novamente." + RESET)
             else:
                 if not funcionario:
-                    print("\nFuncionário não encontrado.")
+                    print(RED + "\nFuncionário não encontrado." + RESET)
                 else:
-                    print("\nSenha incorreta!")
+                    print(RED + "\nSenha incorreta!" + RESET)
         elif opcao == "0":
-            print("\nSaindo do sistema...")
+            print(GREEN + "\nSaindo do sistema..." + RESET)
             break
         else:
-            print("\nOpção inválida! Tente novamente.")
+            print(RED + "\nOpção inválida! Tente novamente." + RESET)
 
 if __name__ == "__main__":
     menu_principal()

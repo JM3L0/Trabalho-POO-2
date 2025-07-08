@@ -1,3 +1,7 @@
+RED = '\033[31m'
+GREEN = '\033[32m'
+RESET = '\033[0m'
+
 def ordenar_quartos(lista):
     return sorted(lista)
 
@@ -7,7 +11,7 @@ def captura_cpf():
     cpf = input("Digite o CPF (somente números): ")
     
     while not (cpf.isdigit() and len(cpf) == 11):
-        print("\nCPF inválido. Deve ser um número de 11 caracteres.")
+        print(RED + "\nCPF inválido. Deve ser um número de 11 caracteres." + RESET)
         cpf = input("Digite o CPF (somente números): ")
         
     return cpf  # Retorna o CPF válido como string
@@ -23,7 +27,7 @@ def capturar_senha():
     senha = input("Digite a senha (mínimo 3 caracteres): ")
     
     while len(senha) < 3:
-        print("\nSenha inválida. Deve ter pelo menos 3 caracteres.")
+        print(RED + "\nSenha inválida. Deve ter pelo menos 3 caracteres." + RESET)
         senha = input("Digite a senha (mínimo 3 caracteres): ")
         
     return senha  # Retorna a senha válida

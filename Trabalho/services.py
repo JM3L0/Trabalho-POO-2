@@ -1,6 +1,10 @@
 import models as md
 import util
 
+RED = '\033[31m'
+GREEN = '\033[32m'
+RESET = '\033[0m'
+
 class Sistema:
     def login(self, usuario, senha):
         if isinstance(usuario, md.Autentica):
@@ -16,23 +20,23 @@ class CheckIn:
 
     def registrar_hospede(self, hospede):
         if not hospede.cpf.isdigit() or len(hospede.cpf) != 11:
-            print("\nCPF inválido. Deve ser um número de 11 caracteres.")
+            print(RED + "\nCPF inválido. Deve ser um número de 11 caracteres." + RESET)
             return False
         if hospede.cpf in CheckIn.hospedes:
-            print("\nCPF já cadastrado para outro hóspede.")
+            print(RED + "\nCPF já cadastrado para outro hóspede." + RESET)
             return False
         if hospede.quarto in CheckIn.quartos_disponiveis:
             CheckIn.hospedes[hospede.cpf] = hospede
             CheckIn.quartos_disponiveis.remove(hospede.quarto)
-            print(f"\nHóspede {hospede.nome} registrado no quarto {hospede.quarto}.")
+            print(GREEN + f"\nHóspede {hospede.nome} registrado no quarto {hospede.quarto}." + RESET)
             return True
         else:
-            print(f"\nO quarto {hospede.quarto} não está disponível.")
+            print(RED + f"\nO quarto {hospede.quarto} não está disponível." + RESET)
             return False
 
     def listar_hospedes(self):
         if not CheckIn.hospedes:
-            print("\nNenhum hóspede registrado.")
+            print(RED + "\nNenhum hóspede registrado." + RESET)
             return False
         else:
             print("\nLista de Hóspedes:")
@@ -49,14 +53,14 @@ class CheckOut:
     
     def remover_hospede(self, cpf, checkin, funcionario, nome):
         if not cpf.isdigit() or len(cpf) != 11:
-            print("\nCPF inválido. Deve ser um número de 11 caracteres.")
+            print(RED + "\nCPF inválido. Deve ser um número de 11 caracteres." + RESET)
             return False
         if cpf in checkin.hospedes:
             checkin.quartos_disponiveis.append(checkin.hospedes[cpf].quarto)
             del checkin.hospedes[cpf]
-            print(f"\nHóspede com CPF {cpf} removido com sucesso.")
+            print(GREEN + f"\nHóspede com CPF {cpf} removido com sucesso." + RESET)
             funcionario.historico.append(f"Funcionário ({funcionario.nome}) fez o checkout do hóspede ({nome}).")
             return True
         else:
-            print(f"\nNenhum hóspede com CPF {cpf} foi encontrado.")
+            print(RED + f"\nNenhum hóspede com CPF {cpf} foi encontrado." + RESET)
             return False
