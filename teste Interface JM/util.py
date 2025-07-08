@@ -5,6 +5,7 @@ RESET = '\033[0m'
 def ordenar_quartos(lista):
     return sorted(lista)
 
+    
 def captura_cpf():
     
     cpf = input("Digite o CPF (somente números): ")

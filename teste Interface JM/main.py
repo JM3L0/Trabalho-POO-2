@@ -6,6 +6,15 @@ RED = '\033[31m'
 GREEN = '\033[32m'
 RESET = '\033[0m'
 
+def menu_funcionario():
+    print("\n=== Menu do Funcionário ===")
+    print("[1] - Registrar Hóspede (Check-in)")
+    print("[2] - Listar Hóspedes")
+    print("[3] - Listar Quartos Disponíveis")
+    print("[4] - Remover Hóspede (Check-out)")
+    print("[5] - Imprimir Histórico")
+    print("[0] - Logout")
+    
 def menu_inicial():
     print("\n=== Sistema de Hotel ===")
     print("[1] - Login como Gerente")
@@ -20,14 +29,6 @@ def menu_gerente():
     print("[4] - Imprimir Histórico")
     print("[0] - Logout")
     
-def menu_funcionario():
-    print("\n=== Menu do Funcionário ===")
-    print("[1] - Registrar Hóspede (Check-in)")
-    print("[2] - Listar Hóspedes")
-    print("[3] - Listar Quartos Disponíveis")
-    print("[4] - Remover Hóspede (Check-out)")
-    print("[5] - Imprimir Histórico")
-    print("[0] - Logout")
     
 def instacia_funcionarios(gerente):
         
@@ -36,6 +37,9 @@ def instacia_funcionarios(gerente):
     gerente.adicionar_funcionario("MARIA", "33333333333", "123")
     gerente.adicionar_funcionario("ANA", "44444444444", "123")
     gerente.adicionar_funcionario("SEU ZÉ", "55555555555", "123")
+
+    # return checkin, checkout, gerente
+
 
 def menu_principal():
     sistema = sv.Sistema()
@@ -49,8 +53,7 @@ def menu_principal():
         menu_inicial()
         opcao = input("Escolha uma opção: ")
 
-        if opcao == "1":# gerente
-            # Login como Gerente
+        if opcao == "1":
             
             print("\n=== Login como Gerente ===")
             senha = util.capturar_senha()
@@ -87,8 +90,7 @@ def menu_principal():
             else:
                 print(RED + "\nSenha incorreta!" + RESET)
 
-        elif opcao == "2":# funcionário
-            # Login como Funcionário
+        elif opcao == "2":
             cpf = util.captura_cpf()
             senha = util.capturar_senha()
             
