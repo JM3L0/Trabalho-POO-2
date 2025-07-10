@@ -1,347 +1,235 @@
 import tkinter as tk
-from tkinter import ttk
 import models as md
 import services as sv
 import util
 
-# Cores para a interface (inspiradas no estilo do terminal)
-RED = '#FF0000'
-GREEN = '#00FF00'
-BG_COLOR = '#F0F0F0'
-BUTTON_COLOR = '#4CAF50'
-TEXT_COLOR = '#333333'
+class InterfaceHotel:
+    def __init__(self, raiz):
+        self.raiz = raiz
+        self.raiz.title("Sistema de Gerenciamento de Hotel")
+        self.raiz.geometry("600x400")
+        self.raiz.configure(bg='#F0F0F0')
 
-class HotelGUI:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Sistema de Gerenciamento de Hotel")
-        self.root.geometry("600x400")
-        self.root.configure(bg=BG_COLOR)
+        # Cores
+        self.cores = {'bg': '#F0F0F0',
+                      'btn': '#4CAF50',
+                      'perigo': '#F44336', 
+                      'texto': '#333333',
+                      'sucesso': '#00FF00',
+                      'erro': '#FF0000'}
 
+        # Serviços
         self.sistema = sv.Sistema()
-        self.checkin = sv.CheckIn()
-        self.checkout = sv.CheckOut()
+        self.checkin_servico = sv.CheckIn()
+        self.checkout_servico = sv.CheckOut()
         self.gerente = md.Gerente("GERENTE GERAL", "00000000000", "321")
-        self.instancia_funcionarios()
+        
+        # Funcionários padrão
+        for nome, cpf in [("FUNCIONARIO P", "11111111111"), ("LUIS", "22222222222"), ("MARIA", "33333333333"), ("ANA", "44444444444"), ("SEU ZÉ", "55555555555")]:
+            self.gerente.adicionar_funcionario(nome, cpf, "123")
 
-        self.current_user = None
-        self.message_label = None  # Para mensagens temporárias
-        self.show_initial_menu()
+        self.usuario_atual = None
+        self.rotulo_mensagem = None
+        self.mostrar_menu_inicial()
 
-    def instancia_funcionarios(self):
-        """Inicializa funcionários padrão, como no main.py."""
-        self.gerente.adicionar_funcionario("FUNCIONARIO P", "11111111111", "123")
-        self.gerente.adicionar_funcionario("LUIS", "22222222222", "123")
-        self.gerente.adicionar_funcionario("MARIA", "33333333333", "123")
-        self.gerente.adicionar_funcionario("ANA", "44444444444", "123")
-        self.gerente.adicionar_funcionario("SEU ZÉ", "55555555555", "123")
-
-    def clear_frame(self):
-        """Limpa o conteúdo da janela para exibir uma nova tela."""
-        for widget in self.root.winfo_children():
+    def limpar_frame(self):
+        for widget in self.raiz.winfo_children():
             widget.destroy()
-        self.message_label = None
+        self.rotulo_mensagem = None
 
-    def show_message(self, text, color, duration=3000):
-        """Exibe uma mensagem temporária na janela atual."""
-        if self.message_label:
-            self.message_label.destroy()
-        self.message_label = tk.Label(self.root, text=text, font=("Arial", 12), bg=BG_COLOR, fg=color)
-        self.message_label.pack(pady=10)
-        self.root.after(duration, lambda: self.message_label.destroy() if self.message_label else None)
+    def mostrar_mensagem(self, texto, tipo_msg, duracao=3000):
+        if self.rotulo_mensagem: self.rotulo_mensagem.destroy()
+        cor = self.cores['sucesso'] if tipo_msg == 'sucesso' else self.cores['erro']
+        self.rotulo_mensagem = tk.Label(self.raiz, text=texto, font=("Arial", 12), bg=self.cores['bg'], fg=cor)
+        self.rotulo_mensagem.pack(pady=10)
+        self.raiz.after(duracao, lambda: self.rotulo_mensagem.destroy() if self.rotulo_mensagem else None)
 
-    def show_initial_menu(self):
-        """Exibe o menu inicial."""
-        self.clear_frame()
-        self.root.geometry("600x400")
-        self.root.configure(bg=BG_COLOR)
+    def criar_widgets(self, titulo, itens):
+        self.limpar_frame()
+        self.raiz.geometry("600x400")
+        tk.Label(self.raiz, text=titulo, font=("Arial", 16, "bold"), bg=self.cores['bg'], fg=self.cores['texto']).pack(pady=20)
+        
+        for item in itens:
+            if len(item) == 2:  # Item de menu
+                texto, comando = item
+                bg = self.cores['btn']
+            else:  # Botão com cor
+                texto, comando, cor = item
+                bg = self.cores[cor]
+            
+            tk.Button(self.raiz, text=texto, command=comando, bg=bg, fg="white", font=("Arial", 12)).pack(pady=5, padx=20, fill="x")
 
-        tk.Label(self.root, text="Sistema de Hotel", font=("Arial", 20, "bold"), bg=BG_COLOR, fg=TEXT_COLOR).pack(pady=20)
+    def criar_formulario(self, titulo, campos, funcao_enviar, funcao_voltar):
+        self.limpar_frame()
+        self.raiz.geometry("600x400")
+        tk.Label(self.raiz, text=titulo, font=("Arial", 16, "bold"), bg=self.cores['bg'], fg=self.cores['texto']).pack(pady=20)
 
-        tk.Button(self.root, text="Login como Gerente", command=self.show_gerente_login, bg=BUTTON_COLOR, fg="white", font=("Arial", 12)).pack(pady=10, padx=20, fill="x")
-        tk.Button(self.root, text="Login como Funcionário", command=self.show_funcionario_login, bg=BUTTON_COLOR, fg="white", font=("Arial", 12)).pack(pady=10, padx=20, fill="x")
-        tk.Button(self.root, text="Sair", command=self.root.quit, bg="#F44336", fg="white", font=("Arial", 12)).pack(pady=10, padx=20, fill="x")
+        entradas = {}
+        for nome_campo, tipo_campo in campos:
+            tk.Label(self.raiz, text=f"{nome_campo}:", bg=self.cores['bg'], font=("Arial", 12)).pack(pady=5)
+            mostrar = "*" if tipo_campo == "senha" else None
+            entrada = tk.Entry(self.raiz, font=("Arial", 12), show=mostrar)
+            entrada.pack(pady=5, padx=20)
+            entradas[nome_campo.lower().replace(" ", "_").replace("(", "").replace(")", "")] = entrada
 
-    def show_gerente_login(self):
-        """Exibe a tela de login do gerente."""
-        self.clear_frame()
-        self.root.geometry("600x400")
-        tk.Label(self.root, text="Login Gerente", font=("Arial", 16, "bold"), bg=BG_COLOR, fg=TEXT_COLOR).pack(pady=20)
+        tk.Button(self.raiz, text="Confirmar", command=lambda: funcao_enviar(entradas), bg=self.cores['btn'], fg="white", font=("Arial", 12)).pack(pady=10)
+        tk.Button(self.raiz, text="Voltar", command=funcao_voltar, bg=self.cores['perigo'], fg="white", font=("Arial", 12)).pack(pady=5)
 
-        tk.Label(self.root, text="Senha:", bg=BG_COLOR, font=("Arial", 12)).pack(pady=5)
-        senha_entry = tk.Entry(self.root, show="*", font=("Arial", 12))
-        senha_entry.pack(pady=5, padx=20)
+    def criar_lista(self, titulo, dados, funcao_voltar, funcao_formatar=None):
+        self.limpar_frame()
+        altura = max(400, 100 + len(dados) * 60)
+        self.raiz.geometry(f"600x{altura}")
+        tk.Label(self.raiz, text=titulo, font=("Arial", 16, "bold"), bg=self.cores['bg'], fg=self.cores['texto']).pack(pady=20)
 
-        def try_login():
-            senha = senha_entry.get()
-            if not senha or len(senha) < 3:
-                self.show_message("Senha inválida. Deve ter pelo menos 3 caracteres.", RED)
+        if not dados:
+            tk.Label(self.raiz, text="Nenhum item encontrado.", bg=self.cores['bg'], fg=self.cores['erro'], font=("Arial", 12)).pack(pady=10)
+        else:
+            for item in dados:
+                texto = funcao_formatar(item) if funcao_formatar else str(item)
+                tk.Label(self.raiz, text=texto, bg=self.cores['bg'], font=("Arial", 12), justify="left").pack(pady=5, anchor="w", padx=20)
+
+        tk.Button(self.raiz, text="Voltar", command=funcao_voltar, bg=self.cores['perigo'], fg="white", font=("Arial", 12)).pack(pady=10)
+
+    def mostrar_menu_inicial(self):
+        self.criar_widgets("Sistema de Hotel", [
+            ("Login como Gerente", self.mostrar_login_gerente),
+            ("Login como Funcionário", self.mostrar_login_funcionario),
+            ("Sair", self.raiz.quit, 'perigo')
+        ])
+
+    def mostrar_login_gerente(self):
+        def tentar_login(entradas):
+            senha = entradas['senha'].get()
+            if len(senha) < 3:
+                self.mostrar_mensagem("Senha inválida. Deve ter pelo menos 3 caracteres.", 'erro')
                 return
             if self.sistema.login(self.gerente, senha):
-                self.current_user = self.gerente
-                self.show_message("Login realizado com sucesso como Gerente!", GREEN)
-                self.root.after(2000, self.show_gerente_menu)
+                self.usuario_atual = self.gerente
+                self.mostrar_mensagem("Login realizado com sucesso como Gerente!", 'sucesso')
+                self.raiz.after(2000, self.mostrar_menu_gerente)
             else:
-                self.show_message("Senha incorreta!", RED)
+                self.mostrar_mensagem("Senha incorreta!", 'erro')
 
-        tk.Button(self.root, text="Entrar", command=try_login, bg=BUTTON_COLOR, fg="white", font=("Arial", 12)).pack(pady=10)
-        tk.Button(self.root, text="Voltar", command=self.show_initial_menu, bg="#F44336", fg="white", font=("Arial", 12)).pack(pady=5)
+        self.criar_formulario("Login Gerente", [("Senha", "senha")], tentar_login, self.mostrar_menu_inicial)
 
-    def show_funcionario_login(self):
-        """Exibe a tela de login do funcionário."""
-        self.clear_frame()
-        self.root.geometry("600x400")
-        tk.Label(self.root, text="Login Funcionário", font=("Arial", 16, "bold"), bg=BG_COLOR, fg=TEXT_COLOR).pack(pady=20)
-
-        tk.Label(self.root, text="CPF:", bg=BG_COLOR, font=("Arial", 12)).pack(pady=5)
-        cpf_entry = tk.Entry(self.root, font=("Arial", 12))
-        cpf_entry.pack(pady=5, padx=20)
-
-        tk.Label(self.root, text="Senha:", bg=BG_COLOR, font=("Arial", 12)).pack(pady=5)
-        senha_entry = tk.Entry(self.root, show="*", font=("Arial", 12))
-        senha_entry.pack(pady=5, padx=20)
-
-        def try_login():
-            cpf = cpf_entry.get()
-            senha = senha_entry.get()
+    def mostrar_login_funcionario(self):
+        def tentar_login(entradas):
+            cpf, senha = entradas['cpf'].get(), entradas['senha'].get()
             if not (cpf.isdigit() and len(cpf) == 11):
-                self.show_message("CPF inválido. Deve ser um número de 11 caracteres.", RED)
+                self.mostrar_mensagem("CPF inválido. Deve ser um número de 11 caracteres.", 'erro')
                 return
-            if not senha or len(senha) < 3:
-                self.show_message("Senha inválida. Deve ter pelo menos 3 caracteres.", RED)
+            if len(senha) < 3:
+                self.mostrar_mensagem("Senha inválida. Deve ter pelo menos 3 caracteres.", 'erro')
                 return
             funcionario = util.existe_funcionario(self.gerente.funcionarios, cpf)
             if funcionario and self.sistema.login(funcionario, senha):
-                self.current_user = funcionario
-                self.show_message(f"Login realizado com sucesso como {funcionario.nome}!", GREEN)
-                self.root.after(2000, self.show_funcionario_menu)
+                self.usuario_atual = funcionario
+                self.mostrar_mensagem(f"Login realizado com sucesso como {funcionario.nome}!", 'sucesso')
+                self.raiz.after(2000, self.mostrar_menu_funcionario)
             else:
-                self.show_message("Funcionário não encontrado ou senha incorreta!", RED)
+                self.mostrar_mensagem("Funcionário não encontrado ou senha incorreta!", 'erro')
 
-        tk.Button(self.root, text="Entrar", command=try_login, bg=BUTTON_COLOR, fg="white", font=("Arial", 12)).pack(pady=10)
-        tk.Button(self.root, text="Voltar", command=self.show_initial_menu, bg="#F44336", fg="white", font=("Arial", 12)).pack(pady=5)
+        self.criar_formulario("Login Funcionário", [("CPF", "texto"), ("Senha", "senha")], tentar_login, self.mostrar_menu_inicial)
 
-    def show_gerente_menu(self):
-        """Exibe o menu do gerente."""
-        self.clear_frame()
-        self.root.geometry("600x400")
-        tk.Label(self.root, text="Menu do Gerente", font=("Arial", 16, "bold"), bg=BG_COLOR, fg=TEXT_COLOR).pack(pady=20)
+    def mostrar_menu_gerente(self):
+        self.criar_widgets("Menu do Gerente", [
+            ("Adicionar Funcionário", self.adicionar_funcionario),
+            ("Remover Funcionário", self.remover_funcionario),
+            ("Listar Funcionários", self.listar_funcionarios),
+            ("Imprimir Histórico", self.mostrar_historico_gerente),
+            ("Logout", self.mostrar_menu_inicial, 'perigo')
+        ])
 
-        tk.Button(self.root, text="Adicionar Funcionário", command=self.add_funcionario, bg=BUTTON_COLOR, fg="white", font=("Arial", 12)).pack(pady=5, padx=20, fill="x")
-        tk.Button(self.root, text="Remover Funcionário", command=self.remove_funcionario, bg=BUTTON_COLOR, fg="white", font=("Arial", 12)).pack(pady=5, padx=20, fill="x")
-        tk.Button(self.root, text="Listar Funcionários", command=self.list_funcionarios, bg=BUTTON_COLOR, fg="white", font=("Arial", 12)).pack(pady=5, padx=20, fill="x")
-        tk.Button(self.root, text="Imprimir Histórico", command=self.show_historico_gerente, bg=BUTTON_COLOR, fg="white", font=("Arial", 12)).pack(pady=5, padx=20, fill="x")
-        tk.Button(self.root, text="Logout", command=self.show_initial_menu, bg="#F44336", fg="white", font=("Arial", 12)).pack(pady=5, padx=20, fill="x")
+    def mostrar_menu_funcionario(self):
+        self.criar_widgets("Menu do Funcionário", [
+            ("Registrar Hóspede (Check-in)", self.registrar_hospede),
+            ("Listar Hóspedes", self.listar_hospedes),
+            ("Listar Quartos Disponíveis", self.listar_quartos),
+            ("Remover Hóspede (Check-out)", self.remover_hospede),
+            ("Imprimir Histórico", self.mostrar_historico_funcionario),
+            ("Logout", self.mostrar_menu_inicial, 'perigo')
+        ])
 
-    def show_funcionario_menu(self):
-        """Exibe o menu do funcionário."""
-        self.clear_frame()
-        self.root.geometry("600x400")
-        tk.Label(self.root, text="Menu do Funcionário", font=("Arial", 16, "bold"), bg=BG_COLOR, fg=TEXT_COLOR).pack(pady=20)
-
-        tk.Button(self.root, text="Registrar Hóspede (Check-in)", command=self.registrar_hospede, bg=BUTTON_COLOR, fg="white", font=("Arial", 12)).pack(pady=5, padx=20, fill="x")
-        tk.Button(self.root, text="Listar Hóspedes", command=self.list_hospedes, bg=BUTTON_COLOR, fg="white", font=("Arial", 12)).pack(pady=5, padx=20, fill="x")
-        tk.Button(self.root, text="Listar Quartos Disponíveis", command=self.list_quartos, bg=BUTTON_COLOR, fg="white", font=("Arial", 12)).pack(pady=5, padx=20, fill="x")
-        tk.Button(self.root, text="Remover Hóspede (Check-out)", command=self.remover_hospede, bg=BUTTON_COLOR, fg="white", font=("Arial", 12)).pack(pady=5, padx=20, fill="x")
-        tk.Button(self.root, text="Imprimir Histórico", command=self.show_historico_funcionario, bg=BUTTON_COLOR, fg="white", font=("Arial", 12)).pack(pady=5, padx=20, fill="x")
-        tk.Button(self.root, text="Logout", command=self.show_initial_menu, bg="#F44336", fg="white", font=("Arial", 12)).pack(pady=5, padx=20, fill="x")
-
-    def add_funcionario(self):
-        """Tela para adicionar funcionário."""
-        self.clear_frame()
-        self.root.geometry("600x400")
-        tk.Label(self.root, text="Adicionar Funcionário", font=("Arial", 16, "bold"), bg=BG_COLOR, fg=TEXT_COLOR).pack(pady=20)
-
-        tk.Label(self.root, text="Nome:", bg=BG_COLOR, font=("Arial", 12)).pack(pady=5)
-        nome_entry = tk.Entry(self.root, font=("Arial", 12))
-        nome_entry.pack(pady=5, padx=20)
-
-        tk.Label(self.root, text="CPF:", bg=BG_COLOR, font=("Arial", 12)).pack(pady=5)
-        cpf_entry = tk.Entry(self.root, font=("Arial", 12))
-        cpf_entry.pack(pady=5, padx=20)
-
-        tk.Label(self.root, text="Senha:", bg=BG_COLOR, font=("Arial", 12)).pack(pady=5)
-        senha_entry = tk.Entry(self.root, show="*", font=("Arial", 12))
-        senha_entry.pack(pady=5, padx=20)
-
-        def submit():
-            nome = nome_entry.get().upper()
-            cpf = cpf_entry.get()
-            senha = senha_entry.get()
-            if not nome or not cpf or not senha:
-                self.show_message("Todos os campos são obrigatórios!", RED)
+    def adicionar_funcionario(self):
+        def enviar(entradas):
+            nome, cpf, senha = entradas['nome'].get().upper(), entradas['cpf'].get(), entradas['senha'].get()
+            if not all([nome, cpf, senha]):
+                self.mostrar_mensagem("Todos os campos são obrigatórios!", 'erro')
                 return
             if self.gerente.adicionar_funcionario(nome, cpf, senha):
-                self.show_message(f"Funcionário {nome} adicionado com sucesso.", GREEN)
-                self.root.after(2000, self.show_gerente_menu)
+                self.mostrar_mensagem(f"Funcionário {nome} adicionado com sucesso.", 'sucesso')
+                self.raiz.after(2000, self.mostrar_menu_gerente)
             else:
-                self.show_message("Falha ao adicionar funcionário. Verifique o CPF.", RED)
+                self.mostrar_mensagem("Falha ao adicionar funcionário. Verifique o CPF.", 'erro')
 
-        tk.Button(self.root, text="Adicionar", command=submit, bg=BUTTON_COLOR, fg="white", font=("Arial", 12)).pack(pady=10)
-        tk.Button(self.root, text="Voltar", command=self.show_gerente_menu, bg="#F44336", fg="white", font=("Arial", 12)).pack(pady=5)
+        self.criar_formulario("Adicionar Funcionário", [("Nome", "texto"), ("CPF", "texto"), ("Senha", "senha")], enviar, self.mostrar_menu_gerente)
 
-    def remove_funcionario(self):
-        """Tela para remover funcionário."""
-        self.clear_frame()
-        self.root.geometry("600x400")
-        tk.Label(self.root, text="Remover Funcionário", font=("Arial", 16, "bold"), bg=BG_COLOR, fg=TEXT_COLOR).pack(pady=20)
-
-        tk.Label(self.root, text="CPF:", bg=BG_COLOR, font=("Arial", 12)).pack(pady=5)
-        cpf_entry = tk.Entry(self.root, font=("Arial", 12))
-        cpf_entry.pack(pady=5, padx=20)
-
-        def submit():
-            cpf = cpf_entry.get()
+    def remover_funcionario(self):
+        def enviar(entradas):
+            cpf = entradas['cpf'].get()
             if self.gerente.remover_funcionario(cpf):
-                self.show_message("Funcionário removido com sucesso.", GREEN)
-                self.root.after(2000, self.show_gerente_menu)
+                self.mostrar_mensagem("Funcionário removido com sucesso.", 'sucesso')
+                self.raiz.after(2000, self.mostrar_menu_gerente)
             else:
-                self.show_message("Nenhum funcionário com esse CPF foi encontrado.", RED)
+                self.mostrar_mensagem("Nenhum funcionário com esse CPF foi encontrado.", 'erro')
 
-        tk.Button(self.root, text="Remover", command=submit, bg=BUTTON_COLOR, fg="white", font=("Arial", 12)).pack(pady=10)
-        tk.Button(self.root, text="Voltar", command=self.show_gerente_menu, bg="#F44336", fg="white", font=("Arial", 12)).pack(pady=5)
+        self.criar_formulario("Remover Funcionário", [("CPF", "texto")], enviar, self.mostrar_menu_gerente)
 
-    def list_funcionarios(self):
-        """Exibe a lista de funcionários sem rolagem."""
-        self.clear_frame()
-        # Calcula a altura da janela com base no número de funcionários
-        num_funcionarios = len(self.gerente.funcionarios)
-        altura = 100 + num_funcionarios * 60  # 60px por funcionário + margem
-        self.root.geometry(f"600x{max(400, altura)}")
-        tk.Label(self.root, text="Lista de Funcionários", font=("Arial", 16, "bold"), bg=BG_COLOR, fg=TEXT_COLOR).pack(pady=20)
+    def listar_funcionarios(self):
+        dados = [(cpf, func) for cpf, func in self.gerente.funcionarios.items()]
+        self.criar_lista("Lista de Funcionários", dados, self.mostrar_menu_gerente, lambda x: f"Nome: {x[1].nome}\n{util.imprimir_cpf(x[0])}")
 
-        if not self.gerente.funcionarios:
-            tk.Label(self.root, text="Nenhum funcionário cadastrado.", bg=BG_COLOR, fg=RED, font=("Arial", 12)).pack(pady=10)
-        else:
-            for cpf, funcionario in self.gerente.funcionarios.items():
-                tk.Label(self.root, text=f"Nome: {funcionario.nome}\n{util.imprimir_cpf(cpf)}", bg=BG_COLOR, font=("Arial", 12), justify="left").pack(pady=5, anchor="w", padx=20)
-
-        tk.Button(self.root, text="Voltar", command=self.show_gerente_menu, bg="#F44336", fg="white", font=("Arial", 12)).pack(pady=10)
-
-    def show_historico_gerente(self):
-        """Exibe o histórico do gerente sem rolagem."""
-        self.clear_frame()
-        # Calcula a altura da janela com base no número de ações
-        num_acoes = len(self.gerente.historico)
-        altura = 100 + num_acoes * 30  # 30px por ação + margem
-        self.root.geometry(f"600x{max(400, altura)}")
-        tk.Label(self.root, text="Histórico do Gerente", font=("Arial", 16, "bold"), bg=BG_COLOR, fg=TEXT_COLOR).pack(pady=20)
-
-        if not self.gerente.historico:
-            tk.Label(self.root, text="Nenhuma ação realizada.", bg=BG_COLOR, fg=RED, font=("Arial", 12)).pack(pady=10)
-        else:
-            for acao in self.gerente.historico:
-                tk.Label(self.root, text=acao, bg=BG_COLOR, font=("Arial", 12), justify="left").pack(pady=2, anchor="w", padx=20)
-
-        tk.Button(self.root, text="Voltar", command=self.show_gerente_menu, bg="#F44336", fg="white", font=("Arial", 12)).pack(pady=10)
+    def mostrar_historico_gerente(self):
+        self.criar_lista("Histórico do Gerente", self.gerente.historico, self.mostrar_menu_gerente)
 
     def registrar_hospede(self):
-        """Tela para registrar hóspede."""
-        self.clear_frame()
-        self.root.geometry("600x400")
-        tk.Label(self.root, text="Registrar Hóspede", font=("Arial", 16, "bold"), bg=BG_COLOR, fg=TEXT_COLOR).pack(pady=20)
-
-        tk.Label(self.root, text="Nome:", bg=BG_COLOR, font=("Arial", 12)).pack(pady=5)
-        nome_entry = tk.Entry(self.root, font=("Arial", 12))
-        nome_entry.pack(pady=5, padx=20)
-
-        tk.Label(self.root, text="CPF:", bg=BG_COLOR, font=("Arial", 12)).pack(pady=5)
-        cpf_entry = tk.Entry(self.root, font=("Arial", 12))
-        cpf_entry.pack(pady=5, padx=20)
-
-        tk.Label(self.root, text="Quarto (1 a 10):", bg=BG_COLOR, font=("Arial", 12)).pack(pady=5)
-        quarto_entry = tk.Entry(self.root, font=("Arial", 12))
-        quarto_entry.pack(pady=5, padx=20)
-
-        def submit():
-            nome = nome_entry.get().upper()
-            cpf = cpf_entry.get()
+        def enviar(entradas):
+            nome, cpf = entradas['nome'].get().upper(), entradas['cpf'].get()
             try:
-                quarto = int(quarto_entry.get())
+                quarto = int(entradas['quarto_1_a_10'].get())
                 if quarto not in range(1, 11):
-                    self.show_message("Número do quarto inválido. Deve estar entre 1 e 10.", RED)
+                    self.mostrar_mensagem("Número do quarto inválido. Deve estar entre 1 e 10.", 'erro')
                     return
             except ValueError:
-                self.show_message("O número do quarto deve ser um número inteiro.", RED)
+                self.mostrar_mensagem("O número do quarto deve ser um número inteiro.", 'erro')
                 return
             hospede = md.Hospede(nome, cpf, quarto)
-            if self.current_user.registrar_hospede(self.checkin, hospede):
-                self.show_message(f"Hóspede {nome} registrado no quarto {quarto}.", GREEN)
-                self.root.after(2000, self.show_funcionario_menu)
+            if self.usuario_atual.registrar_hospede(self.checkin_servico, hospede):
+                self.mostrar_mensagem(f"Hóspede {nome} registrado no quarto {quarto}.", 'sucesso')
+                self.raiz.after(2000, self.mostrar_menu_funcionario)
             else:
-                self.show_message("Falha ao registrar hóspede. Verifique CPF ou quarto.", RED)
+                self.mostrar_mensagem("Falha ao registrar hóspede. Verifique CPF ou quarto.", 'erro')
 
-        tk.Button(self.root, text="Registrar", command=submit, bg=BUTTON_COLOR, fg="white", font=("Arial", 12)).pack(pady=10)
-        tk.Button(self.root, text="Voltar", command=self.show_funcionario_menu, bg="#F44336", fg="white", font=("Arial", 12)).pack(pady=5)
+        self.criar_formulario("Registrar Hóspede", [("Nome", "texto"), ("CPF", "texto"), ("Quarto (1 a 10)", "texto")], enviar, self.mostrar_menu_funcionario)
 
-    def list_hospedes(self):
-        """Exibe a lista de hóspedes sem rolagem."""
-        self.clear_frame()
-        # Calcula a altura da janela com base no número de hóspedes
-        num_hospedes = len(self.checkin.hospedes)
-        altura = 100 + num_hospedes * 80  # 80px por hóspede + margem
-        self.root.geometry(f"600x{max(400, altura)}")
-        tk.Label(self.root, text="Lista de Hóspedes", font=("Arial", 16, "bold"), bg=BG_COLOR, fg=TEXT_COLOR).pack(pady=20)
+    def listar_hospedes(self):
+        dados = list(self.checkin_servico.hospedes.values())
+        self.criar_lista("Lista de Hóspedes", dados, self.mostrar_menu_funcionario, lambda h: f"Nome: {h.nome}\n{util.imprimir_cpf(h.cpf)}\nQuarto: {h.quarto}")
 
-        if not self.checkin.hospedes:
-            tk.Label(self.root, text="Nenhum hóspede registrado.", bg=BG_COLOR, fg=RED, font=("Arial", 12)).pack(pady=10)
-        else:
-            for hospede in self.checkin.hospedes.values():
-                tk.Label(self.root, text=f"Nome: {hospede.nome}\n{util.imprimir_cpf(hospede.cpf)}\nQuarto: {hospede.quarto}", bg=BG_COLOR, font=("Arial", 12), justify="left").pack(pady=5, anchor="w", padx=20)
-
-        tk.Button(self.root, text="Voltar", command=self.show_funcionario_menu, bg="#F44336", fg="white", font=("Arial", 12)).pack(pady=10)
-
-    def list_quartos(self):
-        """Exibe a lista de quartos disponíveis sem rolagem."""
-        self.clear_frame()
-        self.root.geometry("600x400")
-        tk.Label(self.root, text="Quartos Disponíveis", font=("Arial", 16, "bold"), bg=BG_COLOR, fg=TEXT_COLOR).pack(pady=20)
-
-        quartos = util.ordenar_quartos(self.checkin.quartos_disponiveis)
-        tk.Label(self.root, text=f"Quartos disponíveis: {quartos}", bg=BG_COLOR, font=("Arial", 12)).pack(pady=10)
-
-        tk.Button(self.root, text="Voltar", command=self.show_funcionario_menu, bg="#F44336", fg="white", font=("Arial", 12)).pack(pady=10)
+    def listar_quartos(self):
+        self.limpar_frame()
+        self.raiz.geometry("600x400")
+        tk.Label(self.raiz, text="Quartos Disponíveis", font=("Arial", 16, "bold"), bg=self.cores['bg'], fg=self.cores['texto']).pack(pady=20)
+        quartos = util.ordenar_quartos(self.checkin_servico.quartos_disponiveis)
+        tk.Label(self.raiz, text=f"Quartos disponíveis: {quartos}", bg=self.cores['bg'], font=("Arial", 12)).pack(pady=10)
+        tk.Button(self.raiz, text="Voltar", command=self.mostrar_menu_funcionario, bg=self.cores['perigo'], fg="white", font=("Arial", 12)).pack(pady=10)
 
     def remover_hospede(self):
-        """Tela para remover hóspede (check-out)."""
-        self.clear_frame()
-        self.root.geometry("600x400")
-        tk.Label(self.root, text="Remover Hóspede (Check-out)", font=("Arial", 16, "bold"), bg=BG_COLOR, fg=TEXT_COLOR).pack(pady=20)
-
-        tk.Label(self.root, text="CPF:", bg=BG_COLOR, font=("Arial", 12)).pack(pady=5)
-        cpf_entry = tk.Entry(self.root, font=("Arial", 12))
-        cpf_entry.pack(pady=5, padx=20)
-
-        def submit():
-            cpf = cpf_entry.get()
-            nome = self.checkin.hospedes.get(cpf, md.Hospede("", "", 0)).nome
-            if self.checkout.remover_hospede(cpf, self.checkin, self.current_user, nome):
-                self.show_message(f"Hóspede com CPF {cpf} removido com sucesso.", GREEN)
-                self.root.after(2000, self.show_funcionario_menu)
+        def enviar(entradas):
+            cpf = entradas['cpf'].get()
+            nome_hospede = self.checkin_servico.hospedes.get(cpf, md.Hospede("", "", 0)).nome
+            if self.checkout_servico.remover_hospede(cpf, self.checkin_servico, self.usuario_atual, nome_hospede):
+                self.mostrar_mensagem(f"Hóspede com CPF {cpf} removido com sucesso.", 'sucesso')
+                self.raiz.after(2000, self.mostrar_menu_funcionario)
             else:
-                self.show_message("Falha ao remover hóspede. Verifique o CPF.", RED)
+                self.mostrar_mensagem("Falha ao remover hóspede. Verifique o CPF.", 'erro')
 
-        tk.Button(self.root, text="Remover", command=submit, bg=BUTTON_COLOR, fg="white", font=("Arial", 12)).pack(pady=10)
-        tk.Button(self.root, text="Voltar", command=self.show_funcionario_menu, bg="#F44336", fg="white", font=("Arial", 12)).pack(pady=5)
+        self.criar_formulario("Remover Hóspede (Check-out)", [("CPF", "texto")], enviar, self.mostrar_menu_funcionario)
 
-    def show_historico_funcionario(self):
-        """Exibe o histórico do funcionário sem rolagem."""
-        self.clear_frame()
-        # Calculando a altura da janela com base no número de ações
-        num_acoes = len(self.current_user.historico)
-        altura = 100 + num_acoes * 30  # 30px por ação + margem
-        self.root.geometry(f"600x{max(400, altura)}")
-        tk.Label(self.root, text=f"Histórico de {self.current_user.nome}", font=("Arial", 16, "bold"), bg=BG_COLOR, fg=TEXT_COLOR).pack(pady=20)
-
-        if not self.current_user.historico:
-            tk.Label(self.root, text="Nenhuma ação realizada.", bg=BG_COLOR, fg=RED, font=("Arial", 12)).pack(pady=10)
-        else:
-            for acao in self.current_user.historico:
-                tk.Label(self.root, text=acao, bg=BG_COLOR, font=("Arial", 12), justify="left").pack(pady=2, anchor="w", padx=20)
-
-        tk.Button(self.root, text="Voltar", command=self.show_funcionario_menu, bg="#F44336", fg="white", font=("Arial", 12)).pack(pady=10)
+    def mostrar_historico_funcionario(self):
+        self.criar_lista(f"Histórico de {self.usuario_atual.nome}", self.usuario_atual.historico, self.mostrar_menu_funcionario)
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = HotelGUI(root)
-    root.mainloop()
+    raiz = tk.Tk()
+    app = InterfaceHotel(raiz)
+    raiz.mainloop()
