@@ -32,11 +32,13 @@ class InterfaceHotel:
         self.rotulo_mensagem = None
         self.mostrar_menu_inicial()
 
+    # Limpar frame, se necessário
     def limpar_frame(self):
         for widget in self.raiz.winfo_children():
             widget.destroy()
         self.rotulo_mensagem = None
 
+    # Método para mostrar mensagens de sucesso ou erro
     def mostrar_mensagem(self, texto, tipo_msg, duracao=3000):
         if self.rotulo_mensagem: self.rotulo_mensagem.destroy()
         cor = self.cores['sucesso'] if tipo_msg == 'sucesso' else self.cores['erro']
@@ -44,6 +46,7 @@ class InterfaceHotel:
         self.rotulo_mensagem.pack(pady=10)
         self.raiz.after(duracao, lambda: self.rotulo_mensagem.destroy() if self.rotulo_mensagem else None)
 
+    # Métodos para criar diferentes telas, como menus, formulários e listas
     def criar_widgets(self, titulo, itens):
         self.limpar_frame()
         self.raiz.geometry("600x400")
@@ -59,6 +62,7 @@ class InterfaceHotel:
             
             tk.Button(self.raiz, text=texto, command=comando, bg=bg, fg="white", font=("Arial", 12)).pack(pady=5, padx=20, fill="x")
 
+    # Métodos para criar formulários e listas, permitindo a entrada de dados e exibição de informações
     def criar_formulario(self, titulo, campos, funcao_enviar, funcao_voltar):
         self.limpar_frame()
         self.raiz.geometry("600x400")
@@ -75,6 +79,7 @@ class InterfaceHotel:
         tk.Button(self.raiz, text="Confirmar", command=lambda: funcao_enviar(entradas), bg=self.cores['btn'], fg="white", font=("Arial", 12)).pack(pady=10)
         tk.Button(self.raiz, text="Voltar", command=funcao_voltar, bg=self.cores['perigo'], fg="white", font=("Arial", 12)).pack(pady=5)
 
+    # Método para criar uma lista de itens
     def criar_lista(self, titulo, dados, funcao_voltar, funcao_formatar=None):
         self.limpar_frame()
         altura = max(400, 100 + len(dados) * 60)
@@ -90,6 +95,7 @@ class InterfaceHotel:
 
         tk.Button(self.raiz, text="Voltar", command=funcao_voltar, bg=self.cores['perigo'], fg="white", font=("Arial", 12)).pack(pady=10)
 
+    # Métodos para mostrar diferentes telas do sistema, como menu inicial, login de gerente e funcionário, e menus específicos
     def mostrar_menu_inicial(self):
         self.criar_widgets("Sistema de Hotel", [
             ("Login como Gerente", self.mostrar_login_gerente),
@@ -97,6 +103,7 @@ class InterfaceHotel:
             ("Sair", self.raiz.quit, 'perigo')
         ])
 
+    # Método para mostrar o login do gerente
     def mostrar_login_gerente(self):
         def tentar_login(entradas):
             senha = entradas['senha'].get()
@@ -112,6 +119,7 @@ class InterfaceHotel:
 
         self.criar_formulario("Login Gerente", [("Senha", "senha")], tentar_login, self.mostrar_menu_inicial)
 
+    # Método para mostrar o login do funcionário
     def mostrar_login_funcionario(self):
         def tentar_login(entradas):
             cpf, senha = entradas['cpf'].get(), entradas['senha'].get()
@@ -131,6 +139,7 @@ class InterfaceHotel:
 
         self.criar_formulario("Login Funcionário", [("CPF", "texto"), ("Senha", "senha")], tentar_login, self.mostrar_menu_inicial)
 
+    # Métodos para mostrar os menus do gerente e do funcionário
     def mostrar_menu_gerente(self):
         self.criar_widgets("Menu do Gerente", [
             ("Adicionar Funcionário", self.adicionar_funcionario),
@@ -140,6 +149,7 @@ class InterfaceHotel:
             ("Logout", self.mostrar_menu_inicial, 'perigo')
         ])
 
+    # Método para mostrar o menu do funcionário
     def mostrar_menu_funcionario(self):
         self.criar_widgets("Menu do Funcionário", [
             ("Registrar Hóspede (Check-in)", self.registrar_hospede),
@@ -150,6 +160,7 @@ class InterfaceHotel:
             ("Logout", self.mostrar_menu_inicial, 'perigo')
         ])
 
+    # Métodos para adicionar, remover e listar funcionários, além de imprimir o histórico do gerente
     def adicionar_funcionario(self):
         def enviar(entradas):
             nome, cpf, senha = entradas['nome'].get().upper(), entradas['cpf'].get(), entradas['senha'].get()
@@ -164,6 +175,7 @@ class InterfaceHotel:
 
         self.criar_formulario("Adicionar Funcionário", [("Nome", "texto"), ("CPF", "texto"), ("Senha", "senha")], enviar, self.mostrar_menu_gerente)
 
+    # Métodos para remover funcionários, listar funcionários e imprimir o histórico do gerente
     def remover_funcionario(self):
         def enviar(entradas):
             cpf = entradas['cpf'].get()
@@ -175,13 +187,16 @@ class InterfaceHotel:
 
         self.criar_formulario("Remover Funcionário", [("CPF", "texto")], enviar, self.mostrar_menu_gerente)
 
+    # Método para listar funcionários
     def listar_funcionarios(self):
         dados = [(cpf, func) for cpf, func in self.gerente.funcionarios.items()]
         self.criar_lista("Lista de Funcionários", dados, self.mostrar_menu_gerente, lambda x: f"Nome: {x[1].nome}\n{util.imprimir_cpf(x[0])}")
 
+    # Método para mostrar o histórico do gerente
     def mostrar_historico_gerente(self):
         self.criar_lista("Histórico do Gerente", self.gerente.historico, self.mostrar_menu_gerente)
 
+    # Métodos para registrar
     def registrar_hospede(self):
         def enviar(entradas):
             nome, cpf = entradas['nome'].get().upper(), entradas['cpf'].get()
@@ -202,10 +217,12 @@ class InterfaceHotel:
 
         self.criar_formulario("Registrar Hóspede", [("Nome", "texto"), ("CPF", "texto"), ("Quarto (1 a 10)", "texto")], enviar, self.mostrar_menu_funcionario)
 
+    # Métodos para listar hóspedes
     def listar_hospedes(self):
         dados = list(self.checkin_servico.hospedes.values())
         self.criar_lista("Lista de Hóspedes", dados, self.mostrar_menu_funcionario, lambda h: f"Nome: {h.nome}\n{util.imprimir_cpf(h.cpf)}\nQuarto: {h.quarto}")
 
+    # Método para listar quartos disponíveis
     def listar_quartos(self):
         self.limpar_frame()
         self.raiz.geometry("600x400")
@@ -214,6 +231,7 @@ class InterfaceHotel:
         tk.Label(self.raiz, text=f"Quartos disponíveis: {quartos}", bg=self.cores['bg'], font=("Arial", 12)).pack(pady=10)
         tk.Button(self.raiz, text="Voltar", command=self.mostrar_menu_funcionario, bg=self.cores['perigo'], fg="white", font=("Arial", 12)).pack(pady=10)
 
+    # Método para remover hóspedes
     def remover_hospede(self):
         def enviar(entradas):
             cpf = entradas['cpf'].get()
@@ -226,9 +244,11 @@ class InterfaceHotel:
 
         self.criar_formulario("Remover Hóspede (Check-out)", [("CPF", "texto")], enviar, self.mostrar_menu_funcionario)
 
+    # Método para mostrar o histórico do funcionário
     def mostrar_historico_funcionario(self):
         self.criar_lista(f"Histórico de {self.usuario_atual.nome}", self.usuario_atual.historico, self.mostrar_menu_funcionario)
 
+# Método para iniciar a interface
 if __name__ == "__main__":
     raiz = tk.Tk()
     app = InterfaceHotel(raiz)
